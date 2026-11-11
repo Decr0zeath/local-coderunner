@@ -2,7 +2,7 @@
 
 Notes from 2026-11-01, after Practical Exam 02, on why PE02's CodeRunner failed and the options
 weighed. The plan they settled on, a server on one lab PC under Safe Exam Browser, was replaced
-on 2026-11-11 by what is now built in [`local-coderunner/`](local-coderunner/README.md): one
+on 2026-11-11 by what is now built in this repository ([`README.md`](README.md)): one
 `.exe` on each student PC, with the internet and the lab network off. The next section says what
 changed and why; the server plan is kept below it as the record.
 
@@ -192,6 +192,6 @@ script turns that into the `.c` files, so nothing has to be copied by hand.
 ## Next steps
 
 1. Pack a trial with `--sample-roster` and open it on one lab PC, from the LMS download.
-2. Pack the re-sit with the class list, and follow `local-coderunner/README.md` before, during
+2. Pack the re-sit with the class list, and follow `README.md` before, during
    and after the sitting.
 3. Write PE03's build script to emit the same exam JSON.

@@ -7,7 +7,7 @@ hidden ones too. At Submit it writes a zip that students upload once the interne
 course owner's `grade.py` reruns every Check in that zip.
 
 First use: the Practical Exam 02 re-sit, with PE02's own questions. Why it exists, and why it is
-an exe on each PC rather than a server in the lab, is in [`../LOCAL-Coderunner.md`](../LOCAL-Coderunner.md).
+an exe on each PC rather than a server in the lab, is in [`LOCAL-Coderunner.md`](LOCAL-Coderunner.md).
 `PRODUCT.md` records who uses it and the decisions the course owner made.
 
 ## Files

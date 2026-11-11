@@ -10,20 +10,22 @@ lab PC's own gcc, applies Moodle's penalty regime, and writes a sealed zip for g
   course owner has already made (do not re-ask them), the plan for v2 (a standalone app plus an
   exam file) and the roadmap.
 - `LOCAL-Coderunner.md`: history. Why PE02's CodeRunner failed on 2026-11-01, and the options weighed.
-- `local-coderunner/`: v1 as it was used for the PE02 re-sit, imported from the course repository.
+- Everything else is v1 as it was used for the PE02 re-sit, imported from the course repository:
   - `README.md` has packing, the day itself and grading. `PRODUCT.md` has users, platform and
     brand, and the design skill reads it.
-  - `src/*.cs`: the exe (C# WinForms, `net48`).
+  - `src/*.cs`, `LocalCodeRunner.csproj`, `app.manifest`: the exe (C# WinForms, `net48`).
   - `lcr.py`: the harness, penalty, crypto and receipt again in Python.
   - `pack.py`: builds, self-tests and packs an exam into the exe.
   - `grade.py`: reruns every recorded Check from the submissions.
 
 v1 still points into the course repository: `pack.py`'s `DEFAULT_EXAM` and the README's
-`../class-contents/...` paths. Pass `--exam` explicitly until they are fixed.
+`../class-contents/...` paths. Pass `--exam` explicitly until they are fixed. Where
+`ForNewRepo.md` and `LOCAL-Coderunner.md` say `local-coderunner/` or `class-contents/`, they
+mean folders in the course repository, not in this one.
 
 ## Commands
 
-Run from `local-coderunner/`. You need the .NET SDK (any recent one, targeting `net48`), Python 3,
+Run from the repository root. You need the .NET SDK (any recent one, targeting `net48`), Python 3,
 and gcc on PATH.
 
 ```powershell
@@ -40,8 +42,8 @@ python grade.py --pack <pack folder> --submissions <LMS download> --out <results
   runs about 65 answers through both the exe and `lcr.py`. It also compares the crypto, receipts,
   penalties and marks. Any disagreement, or a model answer that misses a test, stops the pack.
 - `pack.py` treats a build warning as a failure. Keep the C# warning-free.
-- Do not run `dotnet build` inside `local-coderunner/`, since it leaves `bin/` and `obj/` behind.
-  Build through `pack.py`, which builds on a temp copy, or on a copy of the folder.
+- Build through `pack.py`, which builds on a temp copy. A `dotnet build` in place leaves `bin/`
+  and `obj/` at the root. They are gitignored, but still delete them afterwards.
 - The exe has two headless modes that `pack.py` uses: `--selftest <in.json> <out.json>` and
   `--verify <password> <out.json>`.
 

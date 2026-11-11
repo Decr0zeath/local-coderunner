@@ -1,0 +1,22 @@
+# Build output. pack.py builds on a copy; a build in place leaves these behind.
+bin/
+obj/
+.vs/
+*.user
+__pycache__/
+
+# Never publish these: this repository is public.
+# Packs: passwords, model answers, class list, the packed exe
+PASSWORDS.txt
+pack.json
+assignments.csv
+*.exe
+# Exam sources hold model answers
+*-local-coderunner.json
+# Class lists, receipts, grading output
+*.csv
+resit-feedback.html
+answers/
+# Student submissions
+*.save
+*.zip

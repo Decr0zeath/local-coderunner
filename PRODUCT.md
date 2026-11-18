@@ -14,7 +14,7 @@ The course owner, Engr. Violdan E. Bayocot, packs the exam, gives out the start 
 
 ## Product Purpose
 
-A local, offline stand-in for Moodle's CodeRunner, written after the LMS's CodeRunner was rate-limited during Practical Exam 02 on 2026-11-01. The first use is the PE02 re-sit with PE02's own questions. Success means every student can Check as often as they choose without any network, and the course owner gets every answer and its Check history back intact.
+A local, offline stand-in for Moodle's CodeRunner, written after the LMS's CodeRunner was rate-limited during Practical Exam 02 on 2026-11-01. It was first used for the PE02 re-sit on 2026-11-11, with PE02's own questions; PE03 to PE06 follow. Success means every student can Check as often as they choose without any network, and the course owner gets every answer and its Check history back intact.
 
 ## Operating Context
 
@@ -25,9 +25,9 @@ A local, offline stand-in for Moodle's CodeRunner, written after the LMS's CodeR
 
 ## Capabilities and Constraints
 
-- Each student's ID, from the course owner's roster CSV, fixes one random variant of each of the three questions, shown in order Q1 to Q3.
+- Each student's ID, from the course owner's roster CSV, fixes one random variant of each question, shown in order. PE02 had three questions.
 - No Precheck. Check runs every test: the shown examples appear with expected and got, the hidden ones as a count passed. It also shows the mark and its penalty.
-- Penalty regime 0, 3, 6, 9 ... percent of the question's points, the best Check stands. A failed compile, or a Question 3 loop word anywhere in the answer, counts as a Check.
+- Penalty regime 0, 3, 6, 9 ... percent of the question's points, the best Check stands. A failed compile, or a broken rule such as PE02's no-loop rule (a loop word anywhere in the answer), counts as a Check.
 - Answers are pasted in, not loaded from files.
 - At Submit, any answer changed since its last Check is graded as one more Check.
 - A proctor password can add minutes or reopen a submitted exam, and each use is logged.
@@ -35,11 +35,11 @@ A local, offline stand-in for Moodle's CodeRunner, written after the LMS's CodeR
 
 ## Brand Commitments
 
-The window carries the course's question-card look that students saw on the LMS for PE02 (confirmed by the course owner, 2026-11-11). It's defined in `class-contents/150. Practical Exam 02/build-pracex.py` (`CARD`, `PANEL`, `CODE_INLINE`), with colours from the Lost Century palette in `css/shell.css`.
+The window carries the course's question-card look that students saw on the LMS for PE02 (confirmed by the course owner, 2026-11-11). It's defined in the course repository, in `class-contents/150. Practical Exam 02/build-pracex.py` (`CARD`, `PANEL`, `CODE_INLINE`), with colours from the Lost Century palette in `css/shell.css`. In this repository the palette is `src/Theme.cs`, repeated as CSS in `src/Html.cs`.
 
 ## Evidence on Hand
 
-The questions, tests and model answers come from `build-pracex.py` via `pe02-local-coderunner.json`. Model answers never ship in the exe.
+Each exam's questions, tests and model answers come from its exam JSON (`FORMAT.md`): PE02's from its `build-pracex.py`, later exams' from the exam builder (`PLAN.md`). Model answers never ship in the exe.
 
 ## Product Principles
 

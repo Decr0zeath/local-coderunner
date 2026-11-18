@@ -6,9 +6,14 @@ the exe, and press Check. The exe compiles with the lab PC's own gcc and runs ev
 hidden ones too. At Submit it writes a zip that students upload once the internet is back. The
 course owner's `grade.py` reruns every Check in that zip.
 
-First use: the Practical Exam 02 re-sit, with PE02's own questions. Why it exists, and why it is
-an exe on each PC rather than a server in the lab, is in [`LOCAL-Coderunner.md`](LOCAL-Coderunner.md).
-`PRODUCT.md` records who uses it and the decisions the course owner made.
+## Why it exists
+
+Practical Exam 02 ran on 2026-11-01 as a Moodle quiz with CodeRunner questions. Precheck and
+Check came back rate-limited for the whole sitting. CodeRunner compiles nothing on the Moodle
+site: it sends every run to a Jobe server, and the default one allows 60 runs an hour per site.
+Changing that needs a Moodle admin. Local CodeRunner was built instead, and first used for the
+PE02 re-sit on 2026-11-11. It compiles on each student's own PC, so nothing outside the room can
+stop a Check.
 
 ## Files
 
@@ -19,11 +24,15 @@ an exe on each PC rather than a server in the lab, is in [`LOCAL-Coderunner.md`]
 | `lcr.py` | What `pack.py` and `grade.py` share with the exe: the test harness, the penalty, the crypto, the receipt |
 | `src/` | The exe, C# WinForms on .NET Framework 4.8, which ships with Windows 10 |
 | `LocalCodeRunner.csproj`, `app.manifest` | Its project; `pack.py` builds it on a copy, so `bin/` and `obj/` never land here |
+| `PLAN.md` | What comes next (the exam builder, then a standalone app), and the decisions already made |
+| `FORMAT.md` | Every file it reads and writes: the exam JSON, the pack, the save, the zip, the receipt |
 | `PRODUCT.md` | The product record the design skill reads |
+| `CLAUDE.md` | Instructions for Claude Code |
+| `private/` | Gitignored. Exam material for development, such as PE02's model answers. Never committed |
 
-An exam's questions come from its own build script. PE02's are in
-`../class-contents/150. Practical Exam 02/pe02-local-coderunner.json`, which `build-pracex.py`
-writes beside the Moodle XML from the same statements and tests.
+An exam's questions come from its exam JSON (`FORMAT.md`). PE02's is
+`class-contents\150. Practical Exam 02\pe02-local-coderunner.json` in the course repository,
+written by the `build-pracex.py` beside it. From PE03 on, the exam builder writes it (`PLAN.md`).
 
 ## What the exe does
 
@@ -33,7 +42,8 @@ writes beside the Moodle XML from the same statements and tests.
 - **The draw.** `pack.py` draws one random variant of each question per student, so a student gets
   the same questions on every PC and after every restart. `assignments.csv` lists the draw.
 - **Check.** It compiles the answer and every test into one program with the course flags,
-  `-Wall -Wextra -std=c17 -g`, plus `-lm` as Jobe linked it. Each test then runs as its own
+  `-Wall -Wextra -std=c17 -g`, plus `-ftrack-macro-expansion=0`, which keeps gcc's errors on the
+  student's own lines, and `-lm` as Jobe linked it. Each test then runs as its own
   process with a 3-second limit. Output is compared the way CodeRunner's exact match does,
   ignoring trailing spaces and trailing blank lines, with stderr appended. A `main()` the student
   pastes is renamed out of the way.
@@ -46,11 +56,12 @@ writes beside the Moodle XML from the same statements and tests.
   until the answer changes.
 - **The clock** starts when the student presses Start and keeps running while the exe is closed.
   At 00:00 the exe submits by itself.
-- **Saving.** A sealed save goes to `Desktop\PE02\PE02-<student number>.save` after every change.
-  A copy goes to `%LOCALAPPDATA%\LocalCodeRunner\`, and a registry marker remembers the first
-  start. Deleting the saves therefore cannot restart the clock without the proctor.
+- **Saving.** A sealed save goes to `Desktop\<code>\<code>-<student number>.save` after every
+  change, where `<code>` is the exam's code, such as `PE02`. A copy goes to
+  `%LOCALAPPDATA%\LocalCodeRunner\`, and a registry marker remembers the first start. Deleting the
+  saves therefore cannot restart the clock without the proctor.
 - **Submit** grades every answer changed since its last Check as one more Check, as Moodle's
-  "Submit all and finish" does. It then writes `Desktop\PE02\PE02-<student number>.zip` and
+  "Submit all and finish" does. It then writes `Desktop\<code>\<code>-<student number>.zip` and
   shows a 12-character receipt code.
 
 Two differences from CodeRunner on the LMS, both deliberate:
@@ -63,8 +74,8 @@ Two differences from CodeRunner on the LMS, both deliberate:
 
 - **Before the start:** nothing. Without the start password, the questions and tests in the exe
   are ciphertext (PBKDF2 with 200,000 rounds, then HMAC-SHA256 as a stream cipher and as a MAC).
-  The one exception is a pack folder pushed before the sitting: GitHub Pages then serves its
-  `PASSWORDS.txt` to anyone who has the path.
+  The one exception is a pack folder pushed to the course repository before the sitting: GitHub
+  Pages then serves its `PASSWORDS.txt` to anyone who has the path.
 - **During the exam:** the hidden tests are in the exe's memory, and each test's code is briefly
   compiled into a program on the student's own PC. A student with a debugger, a decompiler and
   the know-how could get at them; the lab PCs are offline and proctored. PE02's tests are also
@@ -83,8 +94,11 @@ The first build on a new machine downloads the .NET Framework reference assembli
 
 ```powershell
 $env:PYTHONIOENCODING = "utf-8"
-python pack.py --roster <class list.csv> --out "..\class-contents\150. Practical Exam 02\instructors-only\resit-pack" --title "Practical Exam 02 · Re-sit"
+python pack.py --exam "<full path>\pe02-local-coderunner.json" --roster "<full path>\class list.csv" --out "<full path>\instructors-only\pack-<date>" --title "Practical Exam 02 · Re-sit"
 ```
+
+Use full paths. `--exam` has a default, but it points into the course repository from before the
+move, so always pass it.
 
 - **The roster** is a CSV with a header row. `pack.py` finds the student-number column (a header
   mentioning ID, ID number or student number) and either a name column or last-name and
@@ -93,8 +107,8 @@ python pack.py --roster <class list.csv> --out "..\class-contents\150. Practical
 - **`--out`** must be a new or empty folder. It receives the exe, `PASSWORDS.txt` (start and
   proctor), `assignments.csv`, and `pack.json`, which holds everything `grade.py` needs, model
   answers and the class list included. The course owner keeps it in the exam's `instructors-only/`
-  folder, as PE02's re-sit pack is in `instructors-only/resit-pack/`. Grading needs this exact
-  folder, so never lose it.
+  folder in the course repository, as PE02's re-sit pack is in `instructors-only/pack-2026-11-11/`.
+  Grading needs this exact folder, so never lose it.
 - **A pack is one sitting.** Packing again makes new passwords and a new draw, and saves from an
   older pack do not open in a newer exe.
 - **The self-test.** Before writing anything, the script builds the exe and runs about 65 answers
@@ -114,8 +128,9 @@ python pack.py --roster <class list.csv> --out "..\class-contents\150. Practical
 2. Pack the real exam with the class list. Upload the exe to the LMS hidden, and show it just
    before the internet goes off.
 3. Make an LMS assignment that takes one `.zip` file.
-4. Print `class-contents/150. Practical Exam 02/resit-front-page/pracex02-resit-front-page.pdf`,
-   one per candidate. It has the receipt boxes.
+4. Print the exam's front page, one per candidate. It has the receipt boxes. PE02's is
+   `class-contents\150. Practical Exam 02\front-page\pracex02-front-page.pdf` in the course
+   repository.
 
 ## On the day
 
@@ -124,7 +139,7 @@ python pack.py --roster <class list.csv> --out "..\class-contents\150. Practical
 | The start | Write the start password on the board. Never show the proctor password |
 | A student needs more time | Proctor in the exam window, type the proctor password, add minutes |
 | A student submitted by mistake | Proctor on the receipt screen, then add time if the clock is out, then Reopen. They submit again and get a new receipt |
-| A PC dies | Copy `Desktop\PE02\PE02-<student number>.save` to the same folder on a spare PC, open the exe there, and type the proctor password when asked. The clock resumes where the save left it; add minutes for the time lost |
+| A PC dies | Copy `Desktop\<code>\<code>-<student number>.save` to the same folder on a spare PC, open the exe there, and type the proctor password when asked. The clock resumes where the save left it; add minutes for the time lost |
 | "Your save file is missing" | The student deleted or lost it. The proctor password starts them again with the same questions, no answers, and the clock running from their first start. It is logged |
 | gcc not found | Nothing on that PC can be checked, and no Check is counted. Move the student |
 | Collecting | Before each student leaves, compare the receipt on the front page with the screen and initial it |
@@ -135,7 +150,7 @@ Once the internet is back, students upload their zip. Download all submissions f
 type the receipts from the front pages into a CSV with `id,receipt` columns, and run:
 
 ```powershell
-python grade.py --pack "..\class-contents\150. Practical Exam 02\instructors-only\resit-pack" --submissions <LMS download> --out <results folder> --receipts <receipts.csv>
+python grade.py --pack "<full path to the pack folder>" --submissions "<LMS download>" --out "<results folder>" --receipts "<receipts.csv>"
 ```
 
 It reads the LMS's own download zip as is, and finds a submission however a student wrapped
@@ -143,7 +158,7 @@ it: inside another zip, extracted and zipped again, or the `.save` sent instead,
 only when no zip came. Copies with the same receipt count once. Files that held no submission
 are listed at the end, by student.
 
-Leave an empty receipt box blank in the CSV. For those students, copy `Desktop\PE02` off the lab
+Leave an empty receipt box blank in the CSV. For those students, copy `Desktop\<code>` off the lab
 PCs before they are reset (the `lab PC` column, and the end of the run, say which) and add
 `--lab-saves <copied folders>`: a lab PC's save never left the room, so its receipt stands in
 for the paper's. A student who uploaded nothing, but whose lab PC holds a zip, is named at the
@@ -173,6 +188,9 @@ What a flag means:
 The exe and `lcr.py` implement the same harness, penalty and crypto, and `pack.py` refuses to
 pack when they disagree. Change both sides together. Build only through `pack.py`, or by
 copying the project elsewhere: a build in this folder leaves `bin/` and `obj/` behind.
+
+The formats in `FORMAT.md` are in use. A v1 pack and its submissions must keep grading, so never
+change a format without bumping its version, and keep `FORMAT.md` in step with the code.
 
 The window carries the course's question-card look (`PRODUCT.md`, Brand Commitments): the
 palette in `src/Theme.cs`, repeated as CSS in `src/Html.cs` for the IE11-rendered statement and

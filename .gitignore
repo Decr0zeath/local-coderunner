@@ -20,3 +20,5 @@ answers/
 # Student submissions
 *.save
 *.zip
+# Exam sources for development: question files, model answers, guides, keys
+/private/

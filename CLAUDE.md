@@ -6,22 +6,25 @@ lab PC's own gcc, applies Moodle's penalty regime, and writes a sealed zip for g
 
 ## Where things are
 
-- `ForNewRepo.md`: **read this first.** It covers how v1 works, the file formats, the decisions the
-  course owner has already made (do not re-ask them), the plan for v2 (a standalone app plus an
-  exam file) and the roadmap.
-- `LOCAL-Coderunner.md`: history. Why PE02's CodeRunner failed on 2026-11-01, and the options weighed.
-- Everything else is v1 as it was used for the PE02 re-sit, imported from the course repository:
-  - `README.md` has packing, the day itself and grading. `PRODUCT.md` has users, platform and
-    brand, and the design skill reads it.
+- `PLAN.md`: **read this first.** What comes next, in order: the exam builder (it must work
+  before PE03's date), then the standalone v2 app. It also lists the decisions the course owner
+  has already made (do not re-ask them) and the open questions.
+- `FORMAT.md`: every format v1 reads and writes, checked against the code, and format 2's
+  proposed additions. Keep it in step with the code.
+- `README.md`: packing, the day itself, and grading, for the course owner and proctors.
+- `PRODUCT.md`: users, platform and brand. The design skill reads it.
+- v1 as it was used for the PE02 re-sit, imported from the course repository:
   - `src/*.cs`, `LocalCodeRunner.csproj`, `app.manifest`: the exe (C# WinForms, `net48`).
-  - `lcr.py`: the harness, penalty, crypto and receipt again in Python.
+  - `lcr.py`: the harness, penalty, crypto and receipt again in Python. `lcr.check` runs one
+    answer against a variant's tests.
   - `pack.py`: builds, self-tests and packs an exam into the exe.
   - `grade.py`: reruns every recorded Check from the submissions.
+- `private/`: gitignored. PE02's source material for the builder's acceptance test, copied from
+  the course repository (VEB-DATASTRUCT); see `private/README.md`. Model answers stay here.
 
-v1 still points into the course repository: `pack.py`'s `DEFAULT_EXAM` and the README's
-`../class-contents/...` paths. Pass `--exam` explicitly until they are fixed. Where
-`ForNewRepo.md` and `LOCAL-Coderunner.md` say `local-coderunner/` or `class-contents/`, they
-mean folders in the course repository, not in this one.
+`pack.py`'s `DEFAULT_EXAM` still points into the course repository. Pass `--exam` explicitly
+until it is fixed. A path such as `class-contents/...` means a folder in the course repository,
+not in this one.
 
 ## Commands
 
@@ -51,7 +54,7 @@ python grade.py --pack <pack folder> --submissions <LMS download> --out <results
 
 - **One harness, written twice.** `src/Engine.cs`, `src/Crypto.cs` and `Session.PenaltyFor`/`MarkFor`
   must behave exactly like `lcr.py`. Change both sides in the same change, then run a trial pack
-  to prove they still agree. (v2 plans to remove the Python copy, see `ForNewRepo.md`.)
+  to prove they still agree. (v2 may remove the Python copy, see `PLAN.md`.)
 - **Target .NET Framework 4.8**, which ships with Windows 10, so the lab PCs need nothing
   installed. Its APIs do not include AES-GCM, which is why the crypto is PBKDF2 plus HMAC-SHA256
   in counter mode. Do not swap in APIs that are newer than net48.
@@ -73,6 +76,8 @@ python grade.py --pack <pack folder> --submissions <LMS download> --out <results
   hidden in the exe, because .NET decompiles in seconds.
 - Model answers never go into anything students receive. `pack.py` strips `answer` before
   sealing, and that must stay true.
+- Exam material for development (question files, model answers, instructor guides, answer
+  keys) goes only in the gitignored `private/` folder.
 - Never commit any of the following: an exam JSON (it holds model answers), a pack folder
   (`PASSWORDS.txt`, `pack.json`, `assignments.csv`, the packed exe), a class list or roster CSV,
   student submissions, `.save` files, or grading output. `.gitignore` covers the usual names.
@@ -82,5 +87,5 @@ python grade.py --pack <pack folder> --submissions <LMS download> --out <results
 ## Writing style
 
 The docs here are short declarative sentences, written for the course owner and proctors rather
-than for developers. Match that style when you edit them. Keep `README.md` and `ForNewRepo.md`
+than for developers. Match that style when you edit them. Keep `README.md`, `FORMAT.md` and `PLAN.md`
 accurate whenever the behaviour they describe changes.
